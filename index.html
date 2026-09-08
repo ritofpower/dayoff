@@ -245,15 +245,36 @@
 /* ============================================================
    1) วางค่าจาก Firebase Console ตรงนี้
    ============================================================ */
-const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'อีเมลแอดมินของคุณ';
+    }
+    match /staff/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /dayoffs/{id} {
+      allow read, create, delete: if request.auth != null;
+    }
+    match /settings/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+  }
+}
+  const firebaseConfig = {
+  apiKey:            "AIzaSyAl9vKVFeE31elKc_o4CFTgyH9HX9KrfWM",
+  authDomain:        "csk-reciept.firebaseapp.com",
+  projectId:         "csk-reciept",
+  storageBucket:     "csk-reciept.firebasestorage.app",
+  messagingSenderId: "849600567024",
+  appId:             "1:849600567024:web:400fa30a292bf907e19435"
 };
-const ADMIN_EMAIL = "";      // อีเมลแอดมิน (ใช้ในกฎความปลอดภัย)
+const SDK = 'https://www.gstatic.com/firebasejs/10.12.0/';
+const ADMIN_EMAIL = "ritofpower.new@gmail.com";      // อีเมลแอดมิน (ใช้ในกฎความปลอดภัย)
 const DEFAULT_MAX_PER_DAY = 2;
 /* ========================================================== */
 
