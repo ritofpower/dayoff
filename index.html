@@ -245,35 +245,14 @@
 /* ============================================================
    1) วางค่าจาก Firebase Console ตรงนี้
    ============================================================ */
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{db}/documents {
-    function isAdmin() {
-      return request.auth != null
-        && request.auth.token.email == 'อีเมลแอดมินของคุณ';
-    }
-    match /staff/{id} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-    match /dayoffs/{id} {
-      allow read, create, delete: if request.auth != null;
-    }
-    match /settings/{id} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-  }
-}
   const firebaseConfig = {
-  apiKey:            "AIzaSyAl9vKVFeE31elKc_o4CFTgyH9HX9KrfWM",
-  authDomain:        "csk-reciept.firebaseapp.com",
-  projectId:         "csk-reciept",
-  storageBucket:     "csk-reciept.firebasestorage.app",
-  messagingSenderId: "849600567024",
-  appId:             "1:849600567024:web:400fa30a292bf907e19435"
+  apiKey: "AIzaSyAFCy1ex8TMo6me2R4XWcuiLMQuY__1dr0",
+  authDomain: "pump-dayoff.firebaseapp.com",
+  projectId: "pump-dayoff",
+  storageBucket: "pump-dayoff.firebasestorage.app",
+  messagingSenderId: "304393972160",
+  appId: "1:304393972160:web:fe6cddb4038f8b0593c025"
 };
-const SDK = 'https://www.gstatic.com/firebasejs/10.12.0/';
 const ADMIN_EMAIL = "ritofpower.new@gmail.com";      // อีเมลแอดมิน (ใช้ในกฎความปลอดภัย)
 const DEFAULT_MAX_PER_DAY = 2;
 /* ========================================================== */
