@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ปฏิทินวันหยุดพนักงาน</title>
+<style>
+  :root{
+    --ink:#0e151d; --panel:#161f2a; --panel-2:#1c2734; --line:#2b3846;
+    --paper:#eef1f4; --muted:#8d9cad; --canopy:#f5d547;
+    --low:#e05a3f; --ok:#4fb583; --sun:#e0796a; --r:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--ink); color:var(--paper);
+    font-family:'Sukhumvit Set','Noto Sans Thai','IBM Plex Sans Thai',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:15px; line-height:1.55; -webkit-text-size-adjust:100%;
+  }
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+  .app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding:0 14px 24px}
+  button{font:inherit}
+  input,select{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--paper);
+    border-radius:8px;padding:11px 12px;font:inherit;font-size:15px;width:100%;
+  }
+  input:focus,select:focus{outline:2px solid var(--canopy);outline-offset:1px}
+  .btn{background:var(--canopy);color:#171205;border:0;border-radius:var(--r);padding:13px 16px;font-weight:700;width:100%;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--paper);border:1px solid var(--line)}
+  .btn.danger{background:transparent;color:var(--low);border:1px solid rgba(224,90,63,.45)}
+  .btn.sm{padding:8px 12px;font-size:13px;font-weight:600;width:auto}
+  .btn[disabled]{opacity:.45;pointer-events:none}
+  .hide{display:none !important}
+
+  /* login */
+  #login{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px 0}
+  #login h1{font-size:22px;margin:0 0 2px;letter-spacing:-.2px}
+  #login .sub{color:var(--muted);font-size:13.5px;margin:0}
+  .tabs{display:flex;gap:6px;margin-top:6px}
+  .tabs button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:10px;cursor:pointer}
+  .tabs button.on{background:var(--canopy);border-color:var(--canopy);color:#171205;font-weight:700}
+  .fieldset{display:flex;flex-direction:column;gap:10px}
+  .lbl{font-size:13px;color:var(--muted);margin-bottom:5px;display:block}
+  .msg{font-size:13px;color:var(--low);min-height:20px}
+  .banner{background:rgba(245,213,71,.1);border:1px solid rgba(245,213,71,.35);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--canopy)}
+
+  /* header */
+  .top{display:flex;align-items:center;justify-content:space-between;padding:16px 0 12px;border-bottom:1px solid var(--line)}
+  .who{font-size:13px;color:var(--muted)}
+  .who b{color:var(--paper);font-size:15px;font-weight:600}
+  .monthbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0 10px}
+  .monthbar h2{margin:0;font-size:19px;font-weight:700}
+  .nav{display:flex;gap:6px}
+  .nav button{width:38px;height:38px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--paper);font-size:17px;cursor:pointer}
+
+  /* calendar */
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px}
+  .dow span{text-align:center;font-size:11.5px;color:var(--muted);padding:2px 0}
+  .dow span.s0{color:var(--sun)}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cell{
+    aspect-ratio:1/1.12;background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:5px 2px 3px;cursor:pointer;color:var(--paper);position:relative;overflow:hidden;
+  }
+  .cell.blank{background:transparent;border-color:transparent;pointer-events:none}
+  .cell .d{font-size:14px;line-height:1.1}
+  .cell.s0 .d{color:var(--sun)}
+  .cell.today{border-color:var(--paper)}
+  .cell.mine{background:rgba(245,213,71,.14);border-color:var(--canopy)}
+  .cell.past{opacity:.42}
+  .dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:4px}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--ok)}
+  .dot.me{background:var(--canopy)}
+  .cell.full .dot{background:var(--low)}
+  .more{font-size:10px;color:var(--muted);margin-top:1px}
+
+  .keyline{display:flex;gap:14px;margin-top:12px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+  .keyline i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+
+  /* summary */
+  h3.sec{font-size:14px;margin:26px 0 8px;font-weight:700}
+  .sumrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(43,56,70,.6);font-size:14px}
+  .sumrow:last-child{border-bottom:0}
+  .sumrow span:last-child{margin-left:auto;color:var(--muted);font-size:13px}
+
+  /* admin */
+  details{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:0 12px;margin-top:14px}
+  summary{padding:13px 0;cursor:pointer;font-weight:600;font-size:14px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"เปิด";float:right;color:var(--muted);font-size:12px;font-weight:400}
+  details[open] summary::after{content:"ปิด"}
+  .inner{border-top:1px solid var(--line);padding:12px 0 16px;display:flex;flex-direction:column;gap:10px}
+  .staffrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(43,56,70,.6)}
+  .staffrow b{font-weight:600;font-size:14.5px}
+  .staffrow .pin{color:var(--muted);font-size:13px;margin-left:auto}
+  .addrow{display:flex;gap:8px}
+  .addrow input:first-child{flex:2}
+  .addrow input:last-of-type{flex:1}
+  pre{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;font-size:11px;line-height:1.5;color:var(--muted);margin:0}
+
+  /* sheet */
+  .scrim{position:fixed;inset:0;background:rgba(6,10,14,.72);display:none;z-index:20}
+  .scrim.open{display:block}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--panel);
+    border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+    padding:16px 14px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;display:none;
+  }
+  .sheet.open{display:block}
+  .sheet .box{max-width:480px;margin:0 auto}
+  .sheet h2{margin:0 0 3px;font-size:18px}
+  .sheet .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .offrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(43,56,70,.6);font-size:14.5px}
+  .offrow .tag{margin-left:auto;font-size:12px;color:var(--muted)}
+  .empty{color:var(--muted);font-size:13.5px;padding:8px 0 12px}
+  .row{display:flex;gap:8px;margin-top:16px}
+  .warn{color:var(--low);font-size:13px;margin:10px 0 0}
+  @media (prefers-reduced-motion:no-preference){
+    .sheet.open{animation:up .18s ease-out}
+    @keyframes up{from{transform:translateY(16px)}to{transform:none}}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ==================== LOGIN ==================== -->
+  <div id="login">
+    <div>
+      <h1>ปฏิทินวันหยุด</h1>
+      <p class="sub">แจ้งวันหยุดล่วงหน้า ดูของทุกคนได้ในหน้าเดียว</p>
+    </div>
+    <div id="modebanner" class="banner hide"></div>
+
+    <div class="tabs">
+      <button id="tab_staff" class="on">พนักงาน</button>
+      <button id="tab_admin">แอดมิน</button>
+    </div>
+
+    <div id="pane_staff" class="fieldset">
+      <div>
+        <span class="lbl">ชื่อเล่น</span>
+        <select id="li_name"></select>
+      </div>
+      <div>
+        <span class="lbl">รหัส 4 หลัก</span>
+        <input id="li_pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+      </div>
+      <button class="btn" id="li_go">เข้าใช้งาน</button>
+    </div>
+
+    <div id="pane_admin" class="fieldset hide">
+      <div>
+        <span class="lbl">อีเมล</span>
+        <input id="ad_mail" type="email" autocomplete="username" placeholder="admin@example.com">
+      </div>
+      <div>
+        <span class="lbl">รหัสผ่าน</span>
+        <input id="ad_pass" type="password" autocomplete="current-password">
+      </div>
+      <button class="btn" id="ad_go">เข้าใช้งาน</button>
+    </div>
+
+    <p class="msg" id="loginmsg"></p>
+  </div>
+
+  <!-- ==================== MAIN ==================== -->
+  <div id="main" class="hide">
+    <div class="top">
+      <span class="who">เข้าใช้งานเป็น<br><b id="whoname"></b></span>
+      <button class="btn ghost sm" id="logout">ออกจากระบบ</button>
+    </div>
+
+    <div class="monthbar">
+      <h2 id="monthname"></h2>
+      <div class="nav">
+        <button id="prev" aria-label="เดือนก่อนหน้า">‹</button>
+        <button id="today" aria-label="เดือนปัจจุบัน">•</button>
+        <button id="next" aria-label="เดือนถัดไป">›</button>
+      </div>
+    </div>
+
+    <div class="dow">
+      <span class="s0">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="keyline">
+      <span><i style="background:var(--canopy)"></i>วันหยุดของคุณ</span>
+      <span><i style="background:var(--ok)"></i>คนอื่นหยุด</span>
+      <span><i style="background:var(--low)"></i>เต็มโควตาวันนั้น</span>
+    </div>
+
+    <h3 class="sec">สรุปเดือนนี้</h3>
+    <div id="summary"></div>
+
+    <div id="adminzone" class="hide">
+      <details>
+        <summary>จัดการพนักงาน</summary>
+        <div class="inner">
+          <div id="stafflist"></div>
+          <div class="addrow">
+            <input id="ns_name" type="text" placeholder="ชื่อเล่น">
+            <input id="ns_pin" type="text" inputmode="numeric" maxlength="4" placeholder="รหัส">
+          </div>
+          <button class="btn" id="ns_add">เพิ่มพนักงาน</button>
+          <p class="msg" id="staffmsg"></p>
+        </div>
+      </details>
+
+      <details>
+        <summary>ตั้งค่าโควตาวันหยุด</summary>
+        <div class="inner">
+          <span class="lbl">จำนวนคนที่หยุดพร้อมกันได้สูงสุดต่อวัน</span>
+          <input id="maxday" type="number" min="1" max="10">
+          <p class="sub" style="color:var(--muted);font-size:12.5px;margin:0">เกินจำนวนนี้ ระบบจะเตือนพนักงานตอนกดยืนยัน แต่แอดมินยังเพิ่มให้ได้</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>วิธีต่อ Firebase</summary>
+        <div class="inner">
+          <p style="margin:0;font-size:13px;color:var(--muted)">เปิดไฟล์นี้ด้วย text editor แล้ววางค่า firebaseConfig ที่บรรทัดบนสุดของ &lt;script&gt; จากนั้นเปิด Authentication ทั้งแบบ Anonymous และ Email/Password แล้ววาง Rules ด้านล่างใน Firestore</p>
+          <pre id="rules"></pre>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"><div class="box">
+  <h2 id="sh_title"></h2>
+  <p class="sub" id="sh_sub"></p>
+  <div id="sh_list"></div>
+  <p class="warn hide" id="sh_warn"></p>
+  <div id="sh_actions"></div>
+</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============================================================
+   1) วางค่าจาก Firebase Console ตรงนี้
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+const ADMIN_EMAIL = "";      // อีเมลแอดมิน (ใช้ในกฎความปลอดภัย)
+const DEFAULT_MAX_PER_DAY = 2;
+/* ========================================================== */
+
+const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                   'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const ym  = (y,m) => `${y}-${pad(m+1)}`;
+
+let CLOUD = false, db = null, auth = null;
+let me = null;                 // {id, nickname, admin}
+let staffList = [], offs = [], settings = {maxPerDay: DEFAULT_MAX_PER_DAY};
+let viewY, viewM, unsubMonth = null, unsubStaff = null;
+const $ = id => document.getElementById(id);
+
+/* ---------- โหมดทดลอง (ไม่มี config / โหลด SDK ไม่ได้) ---------- */
+const LOCAL_KEY = 'dayoff-demo-v1';
+const demo = {
+  staff: [], offs: [], settings:{maxPerDay:DEFAULT_MAX_PER_DAY},
+  load(){
+    try{
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if(raw){ Object.assign(this, JSON.parse(raw)); return; }
+    }catch(e){}
+    this.staff = ['ตี๋','น้องจอ','น้องปริ้น','บังฟาส','น้องฟาร์ม','บังพัน','น้องพี','น้องแจ๊ค','น้องอิง','อาท','น้องหมู']
+      .map((n,i)=>({id:'s'+(i+1), nickname:n, pin:pad(i+1).padStart(4,'1')}));
+    this.save();
+  },
+  save(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify({staff:this.staff,offs:this.offs,settings:this.settings})); }catch(e){} }
+};
+
+/* ---------- ชั้นข้อมูล ---------- */
+const DB = {
+  async boot(){
+    if(!firebaseConfig.apiKey || typeof firebase === 'undefined') return false;
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth(); db = firebase.firestore();
+    await auth.signInAnonymously().catch(()=>{});
+    CLOUD = true; return true;
+  },
+  watchStaff(cb){
+    if(!CLOUD){ cb(demo.staff.slice()); return; }
+    if(unsubStaff) unsubStaff();
+    unsubStaff = db.collection('staff').onSnapshot(s=>{
+      cb(s.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>a.nickname.localeCompare(b.nickname,'th')));
+    }, ()=>cb([]));
+  },
+  watchMonth(key, cb){
+    if(!CLOUD){ cb(demo.offs.filter(o=>o.month===key)); return; }
+    if(unsubMonth) unsubMonth();
+    unsubMonth = db.collection('dayoffs').where('month','==',key).onSnapshot(s=>{
+      cb(s.docs.map(d=>({id:d.id, ...d.data()})));
+    }, ()=>cb([]));
+  },
+  async loadSettings(){
+    if(!CLOUD) return demo.settings;
+    const d = await db.collection('settings').doc('general').get().catch(()=>null);
+    return (d && d.exists) ? {maxPerDay: DEFAULT_MAX_PER_DAY, ...d.data()} : {maxPerDay: DEFAULT_MAX_PER_DAY};
+  },
+  async saveSettings(s){
+    if(!CLOUD){ demo.settings = s; demo.save(); return; }
+    await db.collection('settings').doc('general').set(s, {merge:true});
+  },
+  async addStaff(nickname, pin){
+    if(!CLOUD){ demo.staff.push({id:'s'+Date.now(), nickname, pin}); demo.save(); return; }
+    await db.collection('staff').add({nickname, pin, createdAt: Date.now()});
+  },
+  async delStaff(id){
+    if(!CLOUD){ demo.staff = demo.staff.filter(s=>s.id!==id); demo.save(); return; }
+    await db.collection('staff').doc(id).delete();
+  },
+  async addOff(date, staff){
+    const rec = {date, month:date.slice(0,7), staffId:staff.id, nickname:staff.nickname, createdAt:Date.now()};
+    const id = `${date}__${staff.id}`;
+    if(!CLOUD){ if(!demo.offs.some(o=>o.id===id)) demo.offs.push({id, ...rec}); demo.save(); return; }
+    await db.collection('dayoffs').doc(id).set(rec);
+  },
+  async delOff(id){
+    if(!CLOUD){ demo.offs = demo.offs.filter(o=>o.id!==id); demo.save(); return; }
+    await db.collection('dayoffs').doc(id).delete();
+  },
+  async adminLogin(email, pass){
+    if(!CLOUD){
+      if(pass && pass.length>=4) return true;
+      throw new Error('รหัสผ่านสั้นเกินไป');
+    }
+    await auth.signInWithEmailAndPassword(email, pass);
+    return true;
+  }
+};
+
+/* ---------- login ---------- */
+$('tab_staff').addEventListener('click',()=>switchTab('staff'));
+$('tab_admin').addEventListener('click',()=>switchTab('admin'));
+function switchTab(t){
+  $('tab_staff').classList.toggle('on', t==='staff');
+  $('tab_admin').classList.toggle('on', t==='admin');
+  $('pane_staff').classList.toggle('hide', t!=='staff');
+  $('pane_admin').classList.toggle('hide', t==='staff');
+  $('loginmsg').textContent = '';
+}
+
+function paintNameSelect(){
+  const sel = $('li_name');
+  const keep = sel.value;
+  sel.innerHTML = staffList.length
+    ? staffList.map(s=>`<option value="${s.id}">${s.nickname}</option>`).join('')
+    : '<option value="">— ยังไม่มีรายชื่อ —</option>';
+  if(keep) sel.value = keep;
+}
+
+$('li_go').addEventListener('click',()=>{
+  const id = $('li_name').value;
+  const pin = $('li_pin').value.trim();
+  const s = staffList.find(x=>x.id===id);
+  if(!s){ $('loginmsg').textContent = 'ยังไม่มีรายชื่อในระบบ ให้แอดมินเพิ่มให้ก่อน'; return; }
+  if(String(s.pin) !== pin){ $('loginmsg').textContent = 'รหัสไม่ถูกต้อง ลองใหม่อีกครั้ง'; $('li_pin').value=''; return; }
+  enter({id:s.id, nickname:s.nickname, admin:false});
+});
+$('li_pin').addEventListener('keydown',e=>{ if(e.key==='Enter') $('li_go').click(); });
+
+$('ad_go').addEventListener('click', async ()=>{
+  const mail = $('ad_mail').value.trim(), pass = $('ad_pass').value;
+  $('loginmsg').textContent = '';
+  try{
+    await DB.adminLogin(mail, pass);
+    enter({id:'admin', nickname:'แอดมิน', admin:true});
+  }catch(err){
+    $('loginmsg').textContent = 'เข้าใช้งานไม่สำเร็จ ตรวจอีเมลและรหัสผ่านอีกครั้ง';
+  }
+});
+$('ad_pass').addEventListener('keydown',e=>{ if(e.key==='Enter') $('ad_go').click(); });
+
+function enter(user){
+  me = user;
+  $('login').classList.add('hide');
+  $('main').classList.remove('hide');
+  $('whoname').textContent = user.nickname;
+  $('adminzone').classList.toggle('hide', !user.admin);
+  const now = new Date();
+  viewY = now.getFullYear(); viewM = now.getMonth();
+  loadMonth();
+}
+$('logout').addEventListener('click',()=>{
+  me = null;
+  if(CLOUD && auth.currentUser && !auth.currentUser.isAnonymous){
+    auth.signOut().then(()=>auth.signInAnonymously().catch(()=>{}));
+  }
+  $('main').classList.add('hide');
+  $('login').classList.remove('hide');
+  $('li_pin').value = ''; $('ad_pass').value = '';
+});
+
+/* ---------- calendar ---------- */
+$('prev').addEventListener('click',()=>{ viewM--; if(viewM<0){viewM=11;viewY--;} loadMonth(); });
+$('next').addEventListener('click',()=>{ viewM++; if(viewM>11){viewM=0;viewY++;} loadMonth(); });
+$('today').addEventListener('click',()=>{ const n=new Date(); viewY=n.getFullYear(); viewM=n.getMonth(); loadMonth(); });
+
+function loadMonth(){
+  $('monthname').textContent = `${TH_MONTHS[viewM]} ${viewY + 543}`;
+  DB.watchMonth(ym(viewY,viewM), list=>{ offs = list; drawGrid(); drawSummary(); refreshSheet(); });
+}
+
+function offsOn(date){ return offs.filter(o=>o.date===date); }
+
+function drawGrid(){
+  const first = new Date(viewY, viewM, 1);
+  const days = new Date(viewY, viewM+1, 0).getDate();
+  const lead = first.getDay();
+  const todayStr = ymd(new Date());
+  let html = '';
+  for(let i=0;i<lead;i++) html += '<div class="cell blank"></div>';
+  for(let d=1; d<=days; d++){
+    const date = `${viewY}-${pad(viewM+1)}-${pad(d)}`;
+    const dow = new Date(viewY, viewM, d).getDay();
+    const list = offsOn(date);
+    const mine = me && list.some(o=>o.staffId===me.id);
+    const full = list.length >= settings.maxPerDay;
+    const dots = list.slice(0,6).map(o=>
+      `<span class="dot${me && o.staffId===me.id?' me':''}"></span>`).join('');
+    html += `<button class="cell${dow===0?' s0':''}${date===todayStr?' today':''}${mine?' mine':''}${full?' full':''}${date<todayStr?' past':''}" data-date="${date}">
+        <span class="d num">${d}</span>
+        <span class="dots">${dots}</span>
+        ${list.length>6?`<span class="more num">+${list.length-6}</span>`:''}
+      </button>`;
+  }
+  $('grid').innerHTML = html;
+  document.querySelectorAll('.cell[data-date]').forEach(c=>
+    c.addEventListener('click',()=>openDay(c.dataset.date)));
+}
+
+function drawSummary(){
+  const count = {};
+  offs.forEach(o=>{ count[o.nickname] = (count[o.nickname]||0)+1; });
+  const rows = Object.entries(count).sort((a,b)=>b[1]-a[1]);
+  $('summary').innerHTML = rows.length
+    ? rows.map(([n,c])=>`<div class="sumrow"><span>${n}</span><span class="num">${c} วัน</span></div>`).join('')
+    : '<p class="empty">ยังไม่มีใครแจ้งวันหยุดในเดือนนี้</p>';
+}
+
+/* ---------- day sheet ---------- */
+let sheetDate = null, pending = false;
+
+function openDay(date){
+  sheetDate = date; pending = false;
+  $('scrim').classList.add('open');
+  $('sheet').classList.add('open');
+  refreshSheet();
+}
+function closeSheet(){
+  sheetDate = null; pending = false;
+  $('scrim').classList.remove('open');
+  $('sheet').classList.remove('open');
+}
+$('scrim').addEventListener('click', closeSheet);
+
+function refreshSheet(){
+  if(!sheetDate) return;
+  const d = new Date(sheetDate + 'T00:00:00');
+  const list = offsOn(sheetDate);
+  const mineRec = me ? list.find(o=>o.staffId===me.id) : null;
+  const full = list.length >= settings.maxPerDay;
+
+  $('sh_title').textContent = `${d.getDate()} ${TH_MONTHS[d.getMonth()]} ${d.getFullYear()+543}`;
+  $('sh_sub').textContent = `หยุด ${list.length} คน · โควตาวันละ ${settings.maxPerDay} คน`;
+
+  $('sh_list').innerHTML = list.length
+    ? list.map(o=>`<div class="offrow"><span>${o.nickname}</span>
+        ${(me.admin || o.staffId===me.id) ? `<button class="btn ghost sm" data-del="${o.id}">ลบ</button>` : '<span class="tag">แจ้งแล้ว</span>'}
+      </div>`).join('')
+    : '<p class="empty">ยังไม่มีใครหยุดวันนี้</p>';
+
+  const warn = $('sh_warn');
+  if(full && !mineRec){ warn.textContent = 'วันนี้มีคนหยุดครบโควตาแล้ว ถ้ายืนยันจะเกินจำนวนที่ตั้งไว้'; warn.classList.remove('hide'); }
+  else warn.classList.add('hide');
+
+  let actions = '';
+  if(mineRec){
+    actions = `<div class="row"><button class="btn danger" id="a_cancel">ยกเลิกวันหยุดของฉัน</button></div>`;
+  }else if(pending){
+    actions = `<div class="row">
+        <button class="btn ghost" id="a_back">ย้อนกลับ</button>
+        <button class="btn" id="a_confirm">ยืนยันวันหยุด</button>
+      </div>`;
+  }else{
+    actions = `<div class="row"><button class="btn" id="a_add">+ ขอหยุดวันนี้</button></div>`;
+  }
+  if(me.admin){
+    const free = staffList.filter(s=>!list.some(o=>o.staffId===s.id));
+    if(free.length){
+      actions += `<div class="row">
+          <select id="a_pick">${free.map(s=>`<option value="${s.id}">${s.nickname}</option>`).join('')}</select>
+          <button class="btn ghost" id="a_addfor" style="width:auto;white-space:nowrap">เพิ่มให้</button>
+        </div>`;
+    }
+  }
+  actions += `<div class="row"><button class="btn ghost" id="a_close">ปิด</button></div>`;
+  $('sh_actions').innerHTML = actions;
+
+  const on = (id,fn)=>{ const el=$(id); if(el) el.addEventListener('click',fn); };
+  on('a_add', ()=>{ pending = true; refreshSheet(); });
+  on('a_back',()=>{ pending = false; refreshSheet(); });
+  on('a_confirm', async ()=>{ await DB.addOff(sheetDate, me); pending = false; afterWrite(); });
+  on('a_cancel', async ()=>{ await DB.delOff(mineRec.id); afterWrite(); });
+  on('a_close', closeSheet);
+  on('a_addfor', async ()=>{
+    const s = staffList.find(x=>x.id===$('a_pick').value);
+    if(s){ await DB.addOff(sheetDate, s); afterWrite(); }
+  });
+  $('sh_list').querySelectorAll('[data-del]').forEach(b=>
+    b.addEventListener('click', async ()=>{ await DB.delOff(b.dataset.del); afterWrite(); }));
+}
+function afterWrite(){
+  if(!CLOUD){ offs = demo.offs.filter(o=>o.month===ym(viewY,viewM)); drawGrid(); drawSummary(); refreshSheet(); }
+}
+
+/* ---------- admin: staff ---------- */
+function drawStaff(){
+  $('stafflist').innerHTML = staffList.length
+    ? staffList.map(s=>`<div class="staffrow">
+        <b>${s.nickname}</b><span class="pin num">รหัส ${s.pin}</span>
+        <button class="btn danger sm" data-rm="${s.id}">ลบ</button>
+      </div>`).join('')
+    : '<p class="empty">ยังไม่มีรายชื่อ เพิ่มคนแรกด้านล่างได้เลย</p>';
+  $('stafflist').querySelectorAll('[data-rm]').forEach(b=>
+    b.addEventListener('click', async ()=>{
+      const s = staffList.find(x=>x.id===b.dataset.rm);
+      if(confirm(`ลบ ${s.nickname} ออกจากระบบ?`)){
+        await DB.delStaff(b.dataset.rm);
+        if(!CLOUD){ staffList = demo.staff.slice(); drawStaff(); paintNameSelect(); }
+      }
+    }));
+}
+$('ns_add').addEventListener('click', async ()=>{
+  const name = $('ns_name').value.trim(), pin = $('ns_pin').value.trim();
+  const msg = $('staffmsg');
+  if(!name){ msg.textContent = 'ใส่ชื่อเล่นก่อน'; return; }
+  if(!/^\d{4}$/.test(pin)){ msg.textContent = 'รหัสต้องเป็นตัวเลข 4 หลัก'; return; }
+  if(staffList.some(s=>s.nickname===name)){ msg.textContent = 'ชื่อเล่นนี้มีอยู่แล้ว'; return; }
+  msg.textContent = '';
+  await DB.addStaff(name, pin);
+  $('ns_name').value = ''; $('ns_pin').value = '';
+  if(!CLOUD){ staffList = demo.staff.slice(); drawStaff(); paintNameSelect(); }
+});
+
+$('maxday').addEventListener('change', async e=>{
+  const v = Math.max(1, Math.min(10, +e.target.value || DEFAULT_MAX_PER_DAY));
+  settings.maxPerDay = v; e.target.value = v;
+  await DB.saveSettings({maxPerDay:v});
+  drawGrid(); refreshSheet();
+});
+
+/* ---------- rules snippet ---------- */
+$('rules').textContent =
+`rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == '${ADMIN_EMAIL || 'อีเมลแอดมินของคุณ'}';
+    }
+    match /staff/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /dayoffs/{id} {
+      allow read, create, delete: if request.auth != null;
+    }
+    match /settings/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+  }
+}`;
+
+/* ---------- boot ---------- */
+(async ()=>{
+  let ok = false;
+  try{ ok = await DB.boot(); }catch(e){ ok = false; }
+  if(!ok){
+    demo.load();
+    staffList = demo.staff.slice();
+    settings = demo.settings;
+    $('modebanner').classList.remove('hide');
+    $('modebanner').textContent = 'โหมดทดลอง — ยังไม่ได้ใส่ค่า Firebase ข้อมูลเก็บในเครื่องนี้เท่านั้น รหัสตัวอย่างคือ 1001, 1002 เรียงตามลำดับรายชื่อ';
+    paintNameSelect(); drawStaff();
+    $('maxday').value = settings.maxPerDay;
+    return;
+  }
+  settings = await DB.loadSettings();
+  $('maxday').value = settings.maxPerDay;
+  DB.watchStaff(list=>{
+    staffList = list;
+    paintNameSelect(); drawStaff();
+    if(me) { drawGrid(); refreshSheet(); }
+  });
+})();
+</script>
+</body>
+</html>
