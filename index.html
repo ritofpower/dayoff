@@ -33,10 +33,7 @@
   .hide{display:none !important}
 
   /* login */
-  #login{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px 0}
-  #login h1{font-size:22px;margin:0 0 2px;letter-spacing:-.2px}
-  #login .sub{color:var(--muted);font-size:13.5px;margin:0}
-  .tabs{display:flex;gap:6px;margin-top:6px}
+  .tabs{display:flex;gap:6px;margin-bottom:14px}
   .tabs button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:10px;cursor:pointer}
   .tabs button.on{background:var(--canopy);border-color:var(--canopy);color:#171205;font-weight:700}
   .fieldset{display:flex;flex-direction:column;gap:10px}
@@ -59,24 +56,51 @@
   .dow span.s0{color:var(--sun)}
   .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
   .cell{
-    aspect-ratio:1/1.12;background:var(--panel);border:1px solid var(--line);border-radius:9px;
-    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-    padding:5px 2px 3px;cursor:pointer;color:var(--paper);position:relative;overflow:hidden;
+    min-height:82px;background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
+    padding:4px 3px 4px;cursor:pointer;color:var(--paper);position:relative;overflow:hidden;
   }
-  .cell.blank{background:transparent;border-color:transparent;pointer-events:none}
-  .cell .d{font-size:14px;line-height:1.1}
+  .cell.blank{background:transparent;border-color:transparent;pointer-events:none;min-height:0}
+  .cell .d{font-size:13px;line-height:1.15;text-align:center;flex:none}
   .cell.s0 .d{color:var(--sun)}
   .cell.today{border-color:var(--paper)}
-  .cell.mine{background:rgba(245,213,71,.14);border-color:var(--canopy)}
-  .cell.past{opacity:.42}
-  .dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:4px}
-  .dot{width:5px;height:5px;border-radius:50%;background:var(--ok)}
-  .dot.me{background:var(--canopy)}
-  .cell.full .dot{background:var(--low)}
-  .more{font-size:10px;color:var(--muted);margin-top:1px}
+  .cell.today .d{font-weight:700}
+  .cell.mine{background:rgba(245,213,71,.13);border-color:var(--canopy)}
+  .cell.past{opacity:.45}
+  .names{display:flex;flex-direction:column;gap:1.5px;margin-top:3px;width:100%;min-width:0}
+  .nm{
+    font-size:9.5px;line-height:1.35;border-radius:3px;padding:0 2px;
+    background:rgba(79,181,131,.2);color:#a9e2c6;
+    white-space:nowrap;overflow:hidden;text-overflow:clip;text-align:center;
+  }
+  .nm.me{background:var(--canopy);color:#171205;font-weight:700}
+  .cell.full .nm{background:rgba(224,90,63,.22);color:#f0a596}
+  .cell.full .nm.me{background:var(--canopy);color:#171205}
+  .more{font-size:9px;color:var(--muted);text-align:center;line-height:1.3}
 
   .keyline{display:flex;gap:14px;margin-top:12px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
-  .keyline i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+  .keyline i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
+
+  /* login card under the calendar */
+  .loginbox{
+    margin-top:18px;background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px;
+  }
+  .loginbox.in{border-color:rgba(79,181,131,.4)}
+  .loginbox .txt{flex:1;min-width:0}
+  .loginbox .t1{font-size:14px;font-weight:600}
+  .loginbox .t2{font-size:12.5px;color:var(--muted)}
+  .loginbox .btn{width:auto;flex:none;padding:11px 15px;font-size:14px}
+
+  /* login modal */
+  .modal{
+    position:fixed;left:14px;right:14px;top:50%;transform:translateY(-50%);z-index:22;
+    max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:18px 16px 20px;display:none;max-height:88vh;overflow-y:auto;
+  }
+  .modal.open{display:block}
+  .modal h2{margin:0 0 3px;font-size:19px}
+  .modal .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 
   /* summary */
   h3.sec{font-size:14px;margin:26px 0 8px;font-weight:700}
@@ -126,52 +150,14 @@
 
 <div class="app">
 
-  <!-- ==================== LOGIN ==================== -->
-  <div id="login">
-    <div>
-      <h1>ปฏิทินวันหยุด</h1>
-      <p class="sub">แจ้งวันหยุดล่วงหน้า ดูของทุกคนได้ในหน้าเดียว</p>
-    </div>
-    <div id="modebanner" class="banner hide"></div>
-
-    <div class="tabs">
-      <button id="tab_staff" class="on">พนักงาน</button>
-      <button id="tab_admin">แอดมิน</button>
-    </div>
-
-    <div id="pane_staff" class="fieldset">
-      <div>
-        <span class="lbl">ชื่อเล่น</span>
-        <select id="li_name"></select>
-      </div>
-      <div>
-        <span class="lbl">รหัส 4 หลัก</span>
-        <input id="li_pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
-      </div>
-      <button class="btn" id="li_go">เข้าใช้งาน</button>
-    </div>
-
-    <div id="pane_admin" class="fieldset hide">
-      <div>
-        <span class="lbl">อีเมล</span>
-        <input id="ad_mail" type="email" autocomplete="username" placeholder="admin@example.com">
-      </div>
-      <div>
-        <span class="lbl">รหัสผ่าน</span>
-        <input id="ad_pass" type="password" autocomplete="current-password">
-      </div>
-      <button class="btn" id="ad_go">เข้าใช้งาน</button>
-    </div>
-
-    <p class="msg" id="loginmsg"></p>
-  </div>
-
   <!-- ==================== MAIN ==================== -->
-  <div id="main" class="hide">
+  <div id="main">
     <div class="top">
-      <span class="who">เข้าใช้งานเป็น<br><b id="whoname"></b></span>
-      <button class="btn ghost sm" id="logout">ออกจากระบบ</button>
+      <span class="who" id="wholine">ปฏิทินวันหยุด<br><b>ทีมงานปั๊ม</b></span>
+      <button class="btn ghost sm hide" id="logout">ออกจากระบบ</button>
     </div>
+
+    <div id="modebanner" class="banner hide" style="margin-top:12px"></div>
 
     <div class="monthbar">
       <h2 id="monthname"></h2>
@@ -188,8 +174,16 @@
     <div class="grid" id="grid"></div>
     <div class="keyline">
       <span><i style="background:var(--canopy)"></i>วันหยุดของคุณ</span>
-      <span><i style="background:var(--ok)"></i>คนอื่นหยุด</span>
-      <span><i style="background:var(--low)"></i>เต็มโควตาวันนั้น</span>
+      <span><i style="background:rgba(79,181,131,.5)"></i>คนอื่นหยุด</span>
+      <span><i style="background:rgba(224,90,63,.5)"></i>เต็มโควตาวันนั้น</span>
+    </div>
+
+    <div class="loginbox" id="loginbox">
+      <span class="txt">
+        <span class="t1" id="lb_t1">ยังไม่ได้เข้าสู่ระบบ</span><br>
+        <span class="t2" id="lb_t2">เข้าสู่ระบบก่อนถึงจะกดขอวันหยุดได้</span>
+      </span>
+      <button class="btn" id="lb_btn">เข้าสู่ระบบ</button>
     </div>
 
     <h3 class="sec">สรุปเดือนนี้</h3>
@@ -230,6 +224,44 @@
 </div>
 
 <div class="scrim" id="scrim"></div>
+
+<div class="modal" id="loginModal">
+  <h2>เข้าสู่ระบบ</h2>
+  <p class="sub" id="lm_sub">เลือกชื่อของคุณแล้วใส่รหัส 4 หลัก</p>
+
+  <div class="tabs">
+    <button id="tab_staff" class="on">พนักงาน</button>
+    <button id="tab_admin">แอดมิน</button>
+  </div>
+
+  <div id="pane_staff" class="fieldset">
+    <div>
+      <span class="lbl">ชื่อเล่น</span>
+      <select id="li_name"></select>
+    </div>
+    <div>
+      <span class="lbl">รหัส 4 หลัก</span>
+      <input id="li_pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+    </div>
+    <button class="btn" id="li_go">เข้าใช้งาน</button>
+  </div>
+
+  <div id="pane_admin" class="fieldset hide">
+    <div>
+      <span class="lbl">อีเมล</span>
+      <input id="ad_mail" type="email" autocomplete="username" placeholder="admin@example.com">
+    </div>
+    <div>
+      <span class="lbl">รหัสผ่าน</span>
+      <input id="ad_pass" type="password" autocomplete="current-password">
+    </div>
+    <button class="btn" id="ad_go">เข้าใช้งาน</button>
+  </div>
+
+  <p class="msg" id="loginmsg"></p>
+  <button class="btn ghost" id="lm_close">ปิด</button>
+</div>
+
 <div class="sheet" id="sheet"><div class="box">
   <h2 id="sh_title"></h2>
   <p class="sub" id="sh_sub"></p>
@@ -254,7 +286,7 @@
   appId: "1:304393972160:web:fe6cddb4038f8b0593c025"
 };
 const ADMIN_EMAIL = "ritofpower.new@gmail.com";      // อีเมลแอดมิน (ใช้ในกฎความปลอดภัย)
-const DEFAULT_MAX_PER_DAY = 2;
+const DEFAULT_MAX_PER_DAY = 4;
 /* ========================================================== */
 
 const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
@@ -262,6 +294,17 @@ const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มี
 const pad = n => String(n).padStart(2,'0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const ym  = (y,m) => `${y}-${pad(m+1)}`;
+
+/* ชื่อในช่องปฏิทิน: ตัดคำนำหน้าออกให้พอดีช่อง เช่น น้องปริ้น → ปริ้น */
+const MAX_CHIPS = 4;
+const PREFIXES = ['น้อง','พี่','บัง','เจ๊','ป้า','ลุง','คุณ'];
+function shortName(name){
+  let n = (name||'').trim();
+  for(const p of PREFIXES){
+    if(n.startsWith(p) && n.length - p.length >= 2){ n = n.slice(p.length); break; }
+  }
+  return n;
+}
 
 let CLOUD = false, db = null, auth = null;
 let me = null;                 // {id, nickname, admin}
@@ -389,22 +432,64 @@ $('ad_pass').addEventListener('keydown',e=>{ if(e.key==='Enter') $('ad_go').clic
 
 function enter(user){
   me = user;
-  $('login').classList.add('hide');
-  $('main').classList.remove('hide');
-  $('whoname').textContent = user.nickname;
-  $('adminzone').classList.toggle('hide', !user.admin);
-  const now = new Date();
-  viewY = now.getFullYear(); viewM = now.getMonth();
-  loadMonth();
+  closeLogin();
+  $('li_pin').value = ''; $('ad_pass').value = '';
+  paintIdentity();
+  drawGrid(); drawSummary();
+  if(pendingDate){ const d = pendingDate; pendingDate = null; openDay(d); }
 }
 $('logout').addEventListener('click',()=>{
   me = null;
+  closeSheet();
   if(CLOUD && auth.currentUser && !auth.currentUser.isAnonymous){
     auth.signOut().then(()=>auth.signInAnonymously().catch(()=>{}));
   }
-  $('main').classList.add('hide');
-  $('login').classList.remove('hide');
-  $('li_pin').value = ''; $('ad_pass').value = '';
+  paintIdentity();
+  drawGrid(); drawSummary();
+});
+
+function paintIdentity(){
+  const inbox = $('loginbox');
+  $('logout').classList.toggle('hide', !me);
+  $('adminzone').classList.toggle('hide', !(me && me.admin));
+  if(me){
+    const mine = offs.filter(o=>o.staffId===me.id).length;
+    $('wholine').innerHTML = `เข้าใช้งานเป็น<br><b>${me.nickname}</b>`;
+    inbox.classList.add('in');
+    $('lb_t1').textContent = me.admin ? 'แอดมิน' : me.nickname;
+    $('lb_t2').textContent = me.admin
+      ? 'เพิ่มหรือลบวันหยุดให้ใครก็ได้'
+      : `เดือนนี้คุณแจ้งหยุดไว้ ${mine} วัน · แตะวันในปฏิทินเพื่อขอหยุด`;
+    $('lb_btn').textContent = 'ออกจากระบบ';
+  }else{
+    $('wholine').innerHTML = `ปฏิทินวันหยุด<br><b>ทีมงานปั๊ม</b>`;
+    inbox.classList.remove('in');
+    $('lb_t1').textContent = 'ยังไม่ได้เข้าสู่ระบบ';
+    $('lb_t2').textContent = 'เข้าสู่ระบบก่อนถึงจะกดขอวันหยุดได้';
+    $('lb_btn').textContent = 'เข้าสู่ระบบ';
+  }
+}
+
+/* ---------- login modal ---------- */
+let pendingDate = null;
+function openLogin(date){
+  pendingDate = date || null;
+  $('lm_sub').textContent = date
+    ? `ขอหยุดวันที่ ${(+date.slice(8,10))} ${TH_MONTHS[+date.slice(5,7)-1]} — เข้าสู่ระบบก่อน`
+    : 'เลือกชื่อของคุณแล้วใส่รหัส 4 หลัก';
+  $('loginmsg').textContent = '';
+  switchTab('staff');
+  $('loginModal').classList.add('open');
+  $('scrim').classList.add('open');
+}
+function closeLogin(){
+  pendingDate = null;
+  $('loginModal').classList.remove('open');
+  if(!$('sheet').classList.contains('open')) $('scrim').classList.remove('open');
+}
+$('lm_close').addEventListener('click', closeLogin);
+$('lb_btn').addEventListener('click',()=>{
+  if(me) $('logout').click(); else openLogin(null);
 });
 
 /* ---------- calendar ---------- */
@@ -414,7 +499,7 @@ $('today').addEventListener('click',()=>{ const n=new Date(); viewY=n.getFullYea
 
 function loadMonth(){
   $('monthname').textContent = `${TH_MONTHS[viewM]} ${viewY + 543}`;
-  DB.watchMonth(ym(viewY,viewM), list=>{ offs = list; drawGrid(); drawSummary(); refreshSheet(); });
+  DB.watchMonth(ym(viewY,viewM), list=>{ offs = list; drawGrid(); drawSummary(); paintIdentity(); refreshSheet(); });
 }
 
 function offsOn(date){ return offs.filter(o=>o.date===date); }
@@ -432,17 +517,20 @@ function drawGrid(){
     const list = offsOn(date);
     const mine = me && list.some(o=>o.staffId===me.id);
     const full = list.length >= settings.maxPerDay;
-    const dots = list.slice(0,6).map(o=>
-      `<span class="dot${me && o.staffId===me.id?' me':''}"></span>`).join('');
+    const shown = list.slice(0, MAX_CHIPS);
+    const names = shown.map(o=>
+      `<span class="nm${me && o.staffId===me.id?' me':''}">${shortName(o.nickname)}</span>`).join('');
     html += `<button class="cell${dow===0?' s0':''}${date===todayStr?' today':''}${mine?' mine':''}${full?' full':''}${date<todayStr?' past':''}" data-date="${date}">
         <span class="d num">${d}</span>
-        <span class="dots">${dots}</span>
-        ${list.length>6?`<span class="more num">+${list.length-6}</span>`:''}
+        <span class="names">${names}${list.length>MAX_CHIPS?`<span class="more num">+${list.length-MAX_CHIPS}</span>`:''}</span>
       </button>`;
   }
   $('grid').innerHTML = html;
   document.querySelectorAll('.cell[data-date]').forEach(c=>
-    c.addEventListener('click',()=>openDay(c.dataset.date)));
+    c.addEventListener('click',()=>{
+      if(!me) openLogin(c.dataset.date);
+      else openDay(c.dataset.date);
+    }));
 }
 
 function drawSummary(){
@@ -468,10 +556,14 @@ function closeSheet(){
   $('scrim').classList.remove('open');
   $('sheet').classList.remove('open');
 }
-$('scrim').addEventListener('click', closeSheet);
+$('scrim').addEventListener('click',()=>{
+  if($('loginModal').classList.contains('open')) closeLogin();
+  else closeSheet();
+});
 
 function refreshSheet(){
   if(!sheetDate) return;
+  if(!me){ closeSheet(); return; }
   const d = new Date(sheetDate + 'T00:00:00');
   const list = offsOn(sheetDate);
   const mineRec = me ? list.find(o=>o.staffId===me.id) : null;
@@ -591,8 +683,13 @@ service cloud.firestore {
 
 /* ---------- boot ---------- */
 (async ()=>{
+  const now = new Date();
+  viewY = now.getFullYear(); viewM = now.getMonth();
+  paintIdentity();
+
   let ok = false;
   try{ ok = await DB.boot(); }catch(e){ ok = false; }
+
   if(!ok){
     demo.load();
     staffList = demo.staff.slice();
@@ -601,14 +698,17 @@ service cloud.firestore {
     $('modebanner').textContent = 'โหมดทดลอง — ยังไม่ได้ใส่ค่า Firebase ข้อมูลเก็บในเครื่องนี้เท่านั้น รหัสตัวอย่างคือ 1001, 1002 เรียงตามลำดับรายชื่อ';
     paintNameSelect(); drawStaff();
     $('maxday').value = settings.maxPerDay;
+    loadMonth();
     return;
   }
+
   settings = await DB.loadSettings();
   $('maxday').value = settings.maxPerDay;
+  loadMonth();
   DB.watchStaff(list=>{
     staffList = list;
     paintNameSelect(); drawStaff();
-    if(me) { drawGrid(); refreshSheet(); }
+    drawGrid(); refreshSheet();
   });
 })();
 </script>
